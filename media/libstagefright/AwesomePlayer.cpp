@@ -2219,14 +2219,13 @@ void AwesomePlayer::onVideoEvent() {
             }
         }
 
-        if (latenessUs < -10000) {
+        if (latenessUs < -30000) {
+            // We're more than 30ms early.
+            postVideoEvent_l(30000);
+            return;
+        } else if (latenessUs < -10000) {
             // We're more than 10ms early.
-            logOnTime(timeUs,nowUs,latenessUs);
-            {
-                Mutex::Autolock autoLock(mStatsLock);
-                mStats.mConsecutiveFramesDropped = 0;
-            }
-            postVideoEvent_l(10000);
+            postVideoEvent_l(-latenessUs);
             return;
         }
     }
