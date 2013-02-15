@@ -1047,6 +1047,7 @@ status_t AudioFlinger::setStreamVolume(audio_stream_type_t stream, float value,
             ALOGV("setStreamVolume for mAudioTracks size %d desc %p",mDirectAudioTracks.size(),desc);
             if (desc->mStreamType == stream) {
                 mStreamTypes[stream].volume = value;
+                desc->mVolumeScale = value;
                 desc->stream->set_volume(desc->stream,
                                          desc->mVolumeLeft * mStreamTypes[stream].volume,
                                          desc->mVolumeRight* mStreamTypes[stream].volume);
@@ -6153,6 +6154,7 @@ AudioFlinger::DirectAudioTrack::DirectAudioTrack(const sp<AudioFlinger>& audioFl
 
         allocateBufPool();
     }
+    outputDesc->mVolumeScale = 1.0;
     mDeathRecipient = new PMDeathRecipient(this);
     acquireWakeLock();
 }
@@ -6236,7 +6238,9 @@ void AudioFlinger::DirectAudioTrack::mute(bool muted) {
 void AudioFlinger::DirectAudioTrack::setVolume(float left, float right) {
     mOutputDesc->mVolumeLeft = left;
     mOutputDesc->mVolumeRight = right;
-    mOutputDesc->stream->set_volume(mOutputDesc->stream,left,right);
+    mOutputDesc->stream->set_volume(mOutputDesc->stream,
+                                    left * mOutputDesc->mVolumeScale,
+                                    right* mOutputDesc->mVolumeScale);
 }
 
 int64_t AudioFlinger::DirectAudioTrack::getTimeStamp() {
