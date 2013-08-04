@@ -43,6 +43,7 @@ LOCAL_SHARED_LIBRARIES :=       \
 LOCAL_STATIC_LIBRARIES :=       \
     libstagefright_nuplayer     \
     libstagefright_rtsp         \
+    libmedia_helper             \
 
 LOCAL_C_INCLUDES :=                                                 \
     $(call include-path-for, graphics corecg)                       \
@@ -63,6 +64,18 @@ ifeq ($(BOARD_USES_QCOM_HARDWARE),true)
 endif
 
 LOCAL_MODULE:= libmediaplayerservice
+
+ifeq ($(TARGET_ENABLE_QC_AV_ENHANCEMENTS),true)
+    LOCAL_CFLAGS += -DENABLE_QC_AV_ENHANCEMENTS
+    LOCAL_C_INCLUDES += $(TOP)/frameworks/av/include/media
+    ifeq ($(TARGET_QCOM_MEDIA_VARIANT),caf)
+        LOCAL_C_INCLUDES += \
+            $(TOP)/hardware/qcom/media-caf/mm-core/inc
+    else
+        LOCAL_C_INCLUDES += \
+            $(TOP)/hardware/qcom/media/mm-core/inc
+    endif
+endif #TARGET_ENABLE_QC_AV_ENHANCEMENTS
 
 include $(BUILD_SHARED_LIBRARY)
 

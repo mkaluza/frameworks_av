@@ -1,4 +1,7 @@
 /*
+ * Copyright (c) 2013, The Linux Foundation. All rights reserved.
+ * Not a Contribution.
+ *
  * Copyright (C) 2010 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,6 +35,7 @@
 #include <media/stagefright/NativeWindowWrapper.h>
 #include <media/stagefright/OMXClient.h>
 #include <media/stagefright/OMXCodec.h>
+#include <media/stagefright/ExtendedCodec.h>
 
 #include <media/hardware/HardwareAPI.h>
 
@@ -42,6 +46,7 @@
 #endif
 
 #include "include/avc_utils.h"
+#include "include/QCUtils.h"
 
 namespace android {
 
@@ -367,7 +372,8 @@ ACodec::ACodec()
       mEncoderDelay(0),
       mEncoderPadding(0),
       mChannelMaskPresent(false),
-      mChannelMask(0) {
+      mChannelMask(0),
+      mInSmoothStreamingMode(false) {
     mUninitializedState = new UninitializedState(this);
     mLoadedState = new LoadedState(this);
     mLoadedToIdleState = new LoadedToIdleState(this);
@@ -851,6 +857,10 @@ status_t ACodec::setComponentRole(
             "audio_decoder.amrnb", "audio_encoder.amrnb" },
         { MEDIA_MIMETYPE_AUDIO_AMR_WB,
             "audio_decoder.amrwb", "audio_encoder.amrwb" },
+#ifdef ENABLE_QC_AV_ENHANCEMENTS
+        { MEDIA_MIMETYPE_AUDIO_AMR_WB_PLUS,
+            "audio_decoder.amrwbplus", "audio_encoder.amrwbplus" },
+#endif
         { MEDIA_MIMETYPE_AUDIO_AAC,
             "audio_decoder.aac", "audio_encoder.aac" },
         { MEDIA_MIMETYPE_AUDIO_VORBIS,
@@ -1580,6 +1590,9 @@ status_t ACodec::setupVideoDecoder(
     if (err != OK) {
         return err;
     }
+
+    ExtendedCodec::enableSmoothStreaming(
+            mOMX, mNode, &mInSmoothStreamingMode, mComponentName.c_str());
 
     return OK;
 }
@@ -2334,6 +2347,9 @@ void ACodec::sendFormatChange(const sp<AMessage> &reply) {
                             rect.nTop,
                             rect.nLeft + rect.nWidth,
                             rect.nTop + rect.nHeight);
+                    reply->setInt32(
+                            "color-format",
+                            (int)(videoDef->eColorFormat));
                 }
             }
             break;
@@ -3162,6 +3178,13 @@ void ACodec::BaseState::onOutputBufferDrained(const sp<AMessage> &msg) {
     android_native_rect_t crop;
     if (msg->findRect("crop",
             &crop.left, &crop.top, &crop.right, &crop.bottom)) {
+        if (mCodec->mInSmoothStreamingMode) {
+            OMX_COLOR_FORMATTYPE eColorFormat = OMX_COLOR_FormatUnused;
+            CHECK(msg->findInt32("color-format", (int32_t*)&eColorFormat));
+            QCUtils::updateNativeWindowBufferGeometry(
+                    mCodec->mNativeWindow.get(), crop.right,
+                    crop.bottom, eColorFormat);
+        }
         CHECK_EQ(0, native_window_set_crop(
                 mCodec->mNativeWindow.get(), &crop));
     }
