@@ -861,12 +861,15 @@ status_t CameraService::BasicClient::startCameraOps() {
     res = mAppOpsManager.startOp(AppOpsManager::OP_CAMERA,
             mClientUid, mClientPackageName);
 
-    if (res != AppOpsManager::MODE_ALLOWED) {
-        ALOGI("Camera %d: Access for \"%s\" has been revoked",
-                mCameraId, String8(mClientPackageName).string());
-        return PERMISSION_DENIED;
-    }
-    mOpsActive = true;
+	if (mOpsActive) {
+        if (res != AppOpsManager::MODE_ALLOWED) {
+            ALOGI("Camera %d: Access for \"%s\" has been revoked",
+                    mCameraId, String8(mClientPackageName).string());
+            mOpsActive = false;
+			return PERMISSION_DENIED;
+		}
+	}
+
     return OK;
 }
 
