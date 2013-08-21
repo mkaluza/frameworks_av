@@ -109,7 +109,7 @@ LOCAL_C_INCLUDES += \
         $(TOP)/hardware/qcom/media/mm-core/inc
 endif
 
-LOCAL_CFLAGS += -fno-strict-aliasing
+LOCAL_CFLAGS += -Wno-error=strict-aliasing
 
 LOCAL_SHARED_LIBRARIES := \
         libbinder \
@@ -162,8 +162,7 @@ LOCAL_SHARED_LIBRARIES += \
 
 LOCAL_CFLAGS += \
         -Wno-multichar \
-        -fno-strict-aliasing \
-        -Wno-error=strict-aliasing 
+        -Wno-error=strict-aliasing
 
 ifeq ($(BOARD_USE_SAMSUNG_COLORFORMAT), true)
 LOCAL_CFLAGS += -DUSE_SAMSUNG_COLORFORMAT
