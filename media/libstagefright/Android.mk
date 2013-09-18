@@ -97,6 +97,9 @@ ifeq ($(TARGET_QCOM_AUDIO_VARIANT),caf)
     else
         LOCAL_SRC_FILES += LPAPlayer.cpp
         LOCAL_CFLAGS += -DLEGACY_LPA
+        ifeq ($(call is-chipset-in-board-platform,msm8974),true)
+            LOCAL_CFLAGS += -DUSE_TUNNEL_MODE
+        endif
     endif
     LOCAL_CFLAGS += -DQCOM_ENHANCED_AUDIO
 endif
