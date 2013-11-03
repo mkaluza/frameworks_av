@@ -7,7 +7,7 @@ LOCAL_SRC_FILES:= \
 	EffectLoudnessEnhancer.cpp \
 	dsp/core/dynamic_range_compression.cpp
 
-LOCAL_CFLAGS+= -O2 -fvisibility=hidden
+LOCAL_CFLAGS+= -O2 -fvisibility=hidden -Wno-error=strict-aliasing
 
 LOCAL_SHARED_LIBRARIES := \
 	libcutils \
@@ -22,6 +22,5 @@ LOCAL_C_INCLUDES := \
 	bionic \
 	bionic/libstdc++/include \
 	external/stlport/stlport
-
 
 include $(BUILD_SHARED_LIBRARY)
