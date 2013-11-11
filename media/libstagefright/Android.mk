@@ -69,24 +69,11 @@ LOCAL_C_INCLUDES:= \
         $(TOP)/frameworks/native/services/connectivitymanager \
         $(TOP)/external/flac/include \
         $(TOP)/external/tremolo \
-        $(TOP)/external/openssl/include
+        $(TOP)/external/openssl/include \
 
-ifneq ($(TI_CUSTOM_DOMX_PATH),)
-LOCAL_C_INCLUDES += $(TI_CUSTOM_DOMX_PATH)/omx_core/inc
-LOCAL_CPPFLAGS += -DUSE_TI_CUSTOM_DOMX
-else
-LOCAL_C_INCLUDES += $(TOP)/frameworks/native/include/media/openmax
-endif
-
-ifeq ($(BOARD_USES_STE_FMRADIO),true)
-LOCAL_SRC_FILES += \
-        FMRadioSource.cpp                 \
-        PCMExtractor.cpp
-endif
-
-ifeq ($(TARGET_QCOM_MEDIA_VARIANT),caf)
+ifneq ($(TARGET_QCOM_MEDIA_VARIANT),)
 LOCAL_C_INCLUDES += \
-        $(TOP)/hardware/qcom/media-caf/mm-core/inc
+        $(TOP)/hardware/qcom/media-$(TARGET_QCOM_MEDIA_VARIANT)/mm-core/inc
 else
 LOCAL_C_INCLUDES += \
         $(TOP)/hardware/qcom/media/mm-core/inc
