@@ -414,6 +414,14 @@ int Visualizer_command(effect_handle_t self, uint32_t cmdCode, uint32_t cmdSize,
     VisualizerContext * pContext = (VisualizerContext *)self;
     int retsize;
 
+    union {
+        void * replyData;
+        int32_t * replyData32;
+        int * iReplyData; //in case ints are 16 bits... as the various violations for pReplyData seemed to
+                          //  intentionally differentiate *(int *)pReplyData from *(int32_t *)pReplyData
+    };
+    replyData = pReplyData;
+
     if (pContext == NULL || pContext->mState == VISUALIZER_STATE_UNINITIALIZED) {
         return -EINVAL;
     }
@@ -425,14 +433,14 @@ int Visualizer_command(effect_handle_t self, uint32_t cmdCode, uint32_t cmdSize,
         if (pReplyData == NULL || *replySize != sizeof(int)) {
             return -EINVAL;
         }
-        *(int *) pReplyData = Visualizer_init(pContext);
+        iReplyData[0] = Visualizer_init(pContext);
         break;
     case EFFECT_CMD_SET_CONFIG:
         if (pCmdData == NULL || cmdSize != sizeof(effect_config_t)
                 || pReplyData == NULL || *replySize != sizeof(int)) {
             return -EINVAL;
         }
-        *(int *) pReplyData = Visualizer_setConfig(pContext,
+        iReplyData[0] = Visualizer_setConfig(pContext,
                 (effect_config_t *) pCmdData);
         break;
     case EFFECT_CMD_GET_CONFIG:
@@ -454,7 +462,7 @@ int Visualizer_command(effect_handle_t self, uint32_t cmdCode, uint32_t cmdSize,
         }
         pContext->mState = VISUALIZER_STATE_ACTIVE;
         ALOGV("EFFECT_CMD_ENABLE() OK");
-        *(int *)pReplyData = 0;
+        iReplyData[0] = 0;
         break;
     case EFFECT_CMD_DISABLE:
         if (pReplyData == NULL || *replySize != sizeof(int)) {
@@ -465,7 +473,7 @@ int Visualizer_command(effect_handle_t self, uint32_t cmdCode, uint32_t cmdSize,
         }
         pContext->mState = VISUALIZER_STATE_INITIALIZED;
         ALOGV("EFFECT_CMD_DISABLE() OK");
-        *(int *)pReplyData = 0;
+        iReplyData[0] = 0;
         break;
     case EFFECT_CMD_GET_PARAM: {
         if (pCmdData == NULL ||
@@ -476,28 +484,33 @@ int Visualizer_command(effect_handle_t self, uint32_t cmdCode, uint32_t cmdSize,
         }
         memcpy(pReplyData, pCmdData, sizeof(effect_param_t) + sizeof(uint32_t));
         effect_param_t *p = (effect_param_t *)pReplyData;
+        union {
+            char *data;
+            uint32_t *data32;
+        };
+        data = p->data;
         p->status = 0;
         *replySize = sizeof(effect_param_t) + sizeof(uint32_t);
         if (p->psize != sizeof(uint32_t)) {
             p->status = -EINVAL;
             break;
         }
-        switch (*(uint32_t *)p->data) {
+        switch (data32[0]) {
         case VISUALIZER_PARAM_CAPTURE_SIZE:
             ALOGV("get mCaptureSize = %d", pContext->mCaptureSize);
-            *((uint32_t *)p->data + 1) = pContext->mCaptureSize;
+            data32[1] = pContext->mCaptureSize;
             p->vsize = sizeof(uint32_t);
             *replySize += sizeof(uint32_t);
             break;
         case VISUALIZER_PARAM_SCALING_MODE:
             ALOGV("get mScalingMode = %d", pContext->mScalingMode);
-            *((uint32_t *)p->data + 1) = pContext->mScalingMode;
+            data32[1] = pContext->mScalingMode;
             p->vsize = sizeof(uint32_t);
             *replySize += sizeof(uint32_t);
             break;
         case VISUALIZER_PARAM_MEASUREMENT_MODE:
             ALOGV("get mMeasurementMode = %d", pContext->mMeasurementMode);
-            *((uint32_t *)p->data + 1) = pContext->mMeasurementMode;
+            data32[1] = pContext->mMeasurementMode;
             p->vsize = sizeof(uint32_t);
             *replySize += sizeof(uint32_t);
             break;
@@ -511,31 +524,36 @@ int Visualizer_command(effect_handle_t self, uint32_t cmdCode, uint32_t cmdSize,
             pReplyData == NULL || *replySize != sizeof(int32_t)) {
             return -EINVAL;
         }
-        *(int32_t *)pReplyData = 0;
+        replyData32[0] = 0;
         effect_param_t *p = (effect_param_t *)pCmdData;
+        union {
+            char *data;
+            uint32_t *data32;
+        };
+        data = p->data;
         if (p->psize != sizeof(uint32_t) || p->vsize != sizeof(uint32_t)) {
             *(int32_t *)pReplyData = -EINVAL;
             break;
         }
-        switch (*(uint32_t *)p->data) {
+        switch (data32[0]) {
         case VISUALIZER_PARAM_CAPTURE_SIZE:
-            pContext->mCaptureSize = *((uint32_t *)p->data + 1);
+            pContext->mCaptureSize = data32[1];
             ALOGV("set mCaptureSize = %d", pContext->mCaptureSize);
             break;
         case VISUALIZER_PARAM_SCALING_MODE:
-            pContext->mScalingMode = *((uint32_t *)p->data + 1);
+            pContext->mScalingMode = data32[1];
             ALOGV("set mScalingMode = %d", pContext->mScalingMode);
             break;
         case VISUALIZER_PARAM_LATENCY:
-            pContext->mLatency = *((uint32_t *)p->data + 1);
+            pContext->mLatency = data32[1];
             ALOGV("set mLatency = %d", pContext->mLatency);
             break;
         case VISUALIZER_PARAM_MEASUREMENT_MODE:
-            pContext->mMeasurementMode = *((uint32_t *)p->data + 1);
+            pContext->mMeasurementMode = data32[1];
             ALOGV("set mMeasurementMode = %d", pContext->mMeasurementMode);
             break;
         default:
-            *(int32_t *)pReplyData = -EINVAL;
+            replyData32[0] = -EINVAL;
         }
         } break;
     case EFFECT_CMD_SET_DEVICE:
@@ -625,21 +643,21 @@ int Visualizer_command(effect_handle_t self, uint32_t cmdCode, uint32_t cmdSize,
             }
         }
         float rms = nbValidMeasurements == 0 ? 0.0f : sqrtf(sumRmsSquared / nbValidMeasurements);
-        int32_t* pIntReplyData = (int32_t*)pReplyData;
+
         // convert from I16 sample values to mB and write results
         if (rms < 0.000016f) {
-            pIntReplyData[MEASUREMENT_IDX_RMS] = -9600; //-96dB
+            replyData32[MEASUREMENT_IDX_RMS] = -9600; //-96dB
         } else {
-            pIntReplyData[MEASUREMENT_IDX_RMS] = (int32_t) (2000 * log10(rms / 32767.0f));
+            replyData32[MEASUREMENT_IDX_RMS] = (int32_t) (2000 * log10(rms / 32767.0f));
         }
         if (peakU16 == 0) {
-            pIntReplyData[MEASUREMENT_IDX_PEAK] = -9600; //-96dB
+            replyData32[MEASUREMENT_IDX_PEAK] = -9600; //-96dB
         } else {
-            pIntReplyData[MEASUREMENT_IDX_PEAK] = (int32_t) (2000 * log10(peakU16 / 32767.0f));
+            replyData32[MEASUREMENT_IDX_PEAK] = (int32_t) (2000 * log10(peakU16 / 32767.0f));
         }
         ALOGV("VISUALIZER_CMD_MEASURE peak=%d (%dmB), rms=%.1f (%dmB)",
-                peakU16, pIntReplyData[MEASUREMENT_IDX_PEAK],
-                rms, pIntReplyData[MEASUREMENT_IDX_RMS]);
+                peakU16, replyData32[MEASUREMENT_IDX_PEAK],
+                rms, replyData32[MEASUREMENT_IDX_RMS]);
         }
         break;
 
