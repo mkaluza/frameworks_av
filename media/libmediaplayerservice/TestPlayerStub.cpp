@@ -43,9 +43,10 @@ const char *kTestBuild = "test";
 // @return true if the current build is 'eng' or 'test'.
 bool isTestBuild()
 {
+    const char *defVal = "\0";
     char prop[PROPERTY_VALUE_MAX] = { '\0', };
 
-    property_get(kBuildTypePropName, prop, '\0');
+    property_get(kBuildTypePropName, prop, defVal);
     return strcmp(prop, kEngBuild) == 0 || strcmp(prop, kTestBuild) == 0;
 }
 
