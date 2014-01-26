@@ -18,6 +18,7 @@
 
 #define TRACK_FRAGMENT_H_
 
+#include <utils/Macros.h>
 #include "include/FragmentedMP4Parser.h"
 
 namespace android {

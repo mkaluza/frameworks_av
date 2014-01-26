@@ -19,6 +19,7 @@
 
 #include <utils/Errors.h>
 #include <utils/RefBase.h>
+#include <utils/Macros.h>
 #include <utils/Vector.h>
 #include <utils/threads.h>
 

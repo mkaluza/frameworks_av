@@ -18,6 +18,7 @@
 #define AAC_WRITER_H_
 
 #include <media/stagefright/MediaWriter.h>
+#include <utils/Macros.h>
 #include <utils/threads.h>
 
 namespace android {
