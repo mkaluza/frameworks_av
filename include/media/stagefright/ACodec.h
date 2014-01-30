@@ -18,6 +18,7 @@
 
 #define A_CODEC_H_
 
+#include <utils/Macros.h>
 #include <stdint.h>
 #include <android/native_window.h>
 #include <media/IOMX.h>

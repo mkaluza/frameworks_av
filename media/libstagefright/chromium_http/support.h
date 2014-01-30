@@ -27,6 +27,7 @@
 #include "net/base/io_buffer.h"
 
 #include <utils/KeyedVector.h>
+#include <utils/Macros.h>
 #include <utils/Mutex.h>
 #include <utils/String8.h>
 

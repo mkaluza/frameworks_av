@@ -22,13 +22,14 @@
 #include <stdint.h>
 #include <utils/Errors.h>
 #include <utils/RefBase.h>
+#include <utils/Macros.h>
 #include <system/audio.h>
 #include <media/MediaPlayerInterface.h>
 
 namespace android {
 
 #define FOURCC(c1, c2, c3, c4) \
-    (c1 << 24 | c2 << 16 | c3 << 8 | c4)
+    (static_cast<uint32_t>(c1 << 24) | c2 << 16 | c3 << 8 | c4)
 
 uint16_t U16_AT(const uint8_t *ptr);
 uint32_t U32_AT(const uint8_t *ptr);
