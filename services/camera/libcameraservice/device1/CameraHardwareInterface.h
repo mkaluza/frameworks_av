@@ -661,11 +661,8 @@ private:
 
     static int __set_usage(struct preview_stream_ops* w, int usage)
     {
-#ifdef HTC_3D_SUPPORT
+#if defined(HTC_3D_SUPPORT)
         usage |= GRALLOC_USAGE_PRIVATE_0;
-#endif
-#ifdef SEMC_ICS_CAMERA_BLOB
-        usage |= 0x01000000;
 #endif
         ANativeWindow *a = anw(w);
         return native_window_set_usage(a, usage);
