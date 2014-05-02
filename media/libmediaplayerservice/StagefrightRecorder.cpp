@@ -61,7 +61,6 @@
 
 #include <system/audio.h>
 #ifdef QCOM_HARDWARE
-#include "ExtendedUtils.h"
 #ifdef ENABLE_AV_ENHANCEMENTS
 #include <QCMediaDefs.h>
 #endif
