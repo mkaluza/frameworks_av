@@ -800,6 +800,31 @@ void ANetworkSession::Session::notify(NotificationReason reason) {
 ANetworkSession::ANetworkSession()
     : mNextSessionID(1) {
     mPipeFd[0] = mPipeFd[1] = -1;
+
+    // enable send log output
+    mEnableLog = false;
+
+    // self parse
+    FILE* fp = fopen("/data/data/com.example.mira4u/shared_prefs/prefs.xml", "r");
+    if (fp == NULL) {
+        ALOGE("ANetworkSession() fopen error[%d] mEnableLog[%d]", errno, mEnableLog);
+        return;    
+    }
+
+    char line[80];
+    while( fgets(line , sizeof(line) , fp) != NULL ) {
+        char lin[80];
+        memset(lin, 0, 80);
+        ALOGD("[%s]", strncpy(lin, line, strlen(line)-1)); // delete CR
+        int val = -1;
+        int ret = sscanf(line, "    <string name=\"persist.sys.wfd.log\">%d</string>", &val);
+        if (ret == 1 && val == 1) {
+            mEnableLog = true;
+            break;
+        }
+    }
+    fclose(fp);
+    ALOGD("ANetworkSession() mEnableLog[%d]", mEnableLog);
 }
 
 ANetworkSession::~ANetworkSession() {
@@ -1218,6 +1243,13 @@ status_t ANetworkSession::sendRequest(
     status_t err = session->sendRequest(data, size, timeValid, timeUs);
 
     interrupt();
+
+    // (timeUs == -1) RTSP negotiation
+    //if (mEnableLog || timeUs == -1) {
+    if (mEnableLog) {
+        ALOGD("--> --> --> sendRequest() session[%d] time[%lld] result[%d]", sessionID, timeUs, err);
+        ALOGD("[%d][%s]", size, (char*)data);
+    }
 
     return err;
 }

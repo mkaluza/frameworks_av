@@ -366,6 +366,38 @@ WifiDisplaySource::PlaybackSession::PlaybackSession(
     if (path != NULL) {
         mMediaPath.setTo(path);
     }
+
+    // Source settings
+    mWidth = -1;
+    mHeight = -1;
+    mFramerate = -1;
+
+    // self parse
+    FILE* fp = fopen("/data/data/com.example.mira4u/shared_prefs/prefs.xml", "r");
+    if (fp == NULL) {
+        ALOGE("PlaybackSession() fopen error[%d] (%4d, %4d)[%d]Hz", errno, mWidth, mHeight, mFramerate);
+        return;
+    }
+
+    char line[80];
+    while( fgets(line , sizeof(line) , fp) != NULL ) {
+        char lin[80];
+        memset(lin, 0, 80);
+        ALOGD("[%s]", strncpy(lin, line, strlen(line)-1)); // delete CR
+        int32_t val1 = -1, val2 = -1;
+        int32_t ret = sscanf(line, "    <string name=\"persist.sys.wfd.resolution\">%dx%d</string>", &val1, &val2);
+        if (ret == 2 && val1 > 0 && val2 > 0) {
+            mWidth = val1;
+            mHeight = val2;
+        }
+        val1 = -1;
+        ret = sscanf(line, "    <string name=\"persist.sys.wfd.framerate\">%d</string>", &val1);
+        if (ret == 1 && val1 > 0) {
+            mFramerate = val1;
+        }
+    }
+    fclose(fp);
+    ALOGD("PlaybackSession() (%4d, %4d)[%d]Hz", mWidth, mHeight, mFramerate);
 }
 
 status_t WifiDisplaySource::PlaybackSession::init(
@@ -1032,6 +1064,14 @@ status_t WifiDisplaySource::PlaybackSession::addVideoSource(
                 &profileIdc,
                 &levelIdc,
                 &constraintSet));
+
+    ALOGI("addVideoSource() default  params (%4d, %4d)(%d)Hz", width, height, framesPerSecond);
+    if (mWidth > 0 && mHeight > 0) {
+        width = mWidth;
+        height = mHeight;
+    }
+    framesPerSecond = mFramerate > 0 ? mFramerate : framesPerSecond;
+    ALOGI("addVideoSource() changed? params (%4d, %4d)(%d)Hz", width, height, framesPerSecond);
 
     sp<SurfaceMediaSource> source = new SurfaceMediaSource(width, height);
 

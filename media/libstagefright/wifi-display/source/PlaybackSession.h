@@ -164,6 +164,9 @@ private:
     void onSinkFeedback(const sp<AMessage> &msg);
 
     DISALLOW_EVIL_CONSTRUCTORS(PlaybackSession);
+
+    int32_t mWidth, mHeight;
+    int32_t mFramerate;
 };
 
 }  // namespace android
