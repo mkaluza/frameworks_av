@@ -21,15 +21,15 @@ LOCAL_SRC_FILES:= \
         source/WifiDisplaySource.cpp    \
         VideoFormats.cpp                \
 
+LOCAL_C_INCLUDES:= \
+        $(TOP)/frameworks/av/media/libstagefright \
+        $(TOP)/frameworks/av/media/libstagefright/mpeg2ts \
+
 ifneq ($(TI_CUSTOM_DOMX_PATH),)
 LOCAL_C_INCLUDES += $(TI_CUSTOM_DOMX_PATH)/omx_core/inc
 else
 LOCAL_C_INCLUDES += $(TOP)/frameworks/native/include/media/openmax
 endif
-
-LOCAL_C_INCLUDES:= \
-        $(TOP)/frameworks/av/media/libstagefright \
-        $(TOP)/frameworks/av/media/libstagefright/mpeg2ts \
 
 LOCAL_SHARED_LIBRARIES:= \
         libbinder                       \
