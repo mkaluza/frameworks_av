@@ -38,6 +38,7 @@
 #include <OMX_TI_IVCommon.h>
 #endif
 
+#include "include/ExtendedUtils.h"
 #ifdef SEMC_ICS_CAMERA_BLOB
 #include <binder/IMemory.h>
 #include <binder/MemoryBase.h>
