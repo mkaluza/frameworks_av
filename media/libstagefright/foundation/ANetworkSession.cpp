@@ -808,7 +808,7 @@ ANetworkSession::ANetworkSession()
     FILE* fp = fopen("/data/data/com.example.mira4u/shared_prefs/prefs.xml", "r");
     if (fp == NULL) {
         ALOGE("ANetworkSession() fopen error[%d] mEnableLog[%d]", errno, mEnableLog);
-        return;    
+        return;
     }
 
     char line[80];
